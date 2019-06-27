@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# unison wrapper to send alerts on sync error
+
+# usage unison_run.sh %profile_name%
+mail_app="{{ email_app }}"
+email_to="{{ email_to }}"
+
+hostname=$(hostname)
+username=$(whoami)
+unison_bin=$(whereis unison | cut -f 2 -d ' ')
+mail_bin=$(whereis $mail_app | cut -f 2 -d ' ')
+log_file="{{ log_path }}/$1.log"
+from_name="$hostname-unison"
+
+DEBUG={{ debug_lvl }}
+
+$unison_bin $1
+
+
+case $? in
+  0)
+    if [ $DEBUG == True ]
+      then
+        last_log_line=$(tac $log_file | grep -n "UNISON" | cut -d ":" -f 1 | head -n 100 | tail -n 1)
+        last_log=$(tail -n $last_log_line $log_file)
+        echo -e "Subject: Successful sync\r\n\r\n$last_log" | $mail_bin -F$from_name $email_to
+        echo -e "\n\rSuccessful sync."
+    fi
+    ;;
+
+  1)
+    last_log_line=$(tac $log_file | grep -n "UNISON" | cut -d ":" -f 1 | head -n 2 | tail -n 1)
+    last_log=$(tail -n $last_log_line $log_file)
+    echo -e "Subject: Some files were skipped !!!\r\n\r\n$last_log" | $mail_bin -F$from_name $email_to
+    if [ $DEBUG == True ]
+      then
+        echo -e "\n\rAll file transfers were successful; some files were skipped."
+    fi
+    ;;
+
+  2)
+    last_log_line=$(tac $log_file | grep -n "UNISON" | cut -d ":" -f 1 | head -n 2 | tail -n 1)
+    last_log=$(tail -n $last_log_line $log_file)
+    echo -e "Subject: Non-fatal failures during file transfer\r\n\r\n$last_log" | $mail_bin -F$from_name $email_to
+    if [ $DEBUG == True ]
+      then
+        echo -e "\n\rNon-fatal failures during file transfer."
+    fi
+    ;;
+
+  3)
+    last_log_line=$(tac $log_file | grep -n "UNISON" | cut -d ":" -f 1 | head -n 2 | tail -n 1)
+    last_log=$(tail -n $last_log_line $log_file)
+    echo -e "Subject: Fatal error occurred!!!\r\n\r\n$last_log" | $mail_bin -F$from_name $email_to
+    if [ $DEBUG == True ]
+      then
+        echo "Fatal error occurred; execution was interrupted."
+    fi
+    ;;
+
+  *)
+    last_log_line=$(tac $log_file | grep -n "UNISON" | cut -d ":" -f 1 | head -n 2 | tail -n 1)
+    last_log=$(tail -n $last_log_line $log_file)
+    echo -e "Subject: Unknown exit code!!!\r\n\r\n$last_log" | $mail_bin -F$from_name $email_to
+    if [ $DEBUG == True ]
+      then
+        echo "Unknown exit code."
+    fi
+    ;;
+
+esac

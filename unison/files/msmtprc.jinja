@@ -1,0 +1,12 @@
+tls on
+tls_certcheck off
+logfile {{ log_path }}
+
+host {{ email_server }}
+port {{ email_port }}
+protocol {{ email_protocol }}
+auth on
+from {{ email_user }}
+user {{ email_user }}
+password {{ email_password }}
+

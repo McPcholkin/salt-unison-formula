@@ -1,0 +1,27 @@
+@echo off
+
+REM set variable to first argument
+set task_name=%1
+
+REM check if task exist
+schtasks /query /nh | findstr /I "%task_name%" | findstr /V "Folder"
+
+REM check previos command errorlevel
+IF %ERRORLEVEL% EQU 0 (
+    REM DEBUG
+    REM echo errorlevel - %ERRORLEVEL%
+    
+    REM MAIN output
+    REM an empty line here so the next line will be the last
+    echo(
+    echo changed={{ if_exist }} comment='Task %task_name% alredy exists in task scheduler'
+) ELSE (
+    REM DEBUG
+    REM echo errorlevel - %ERRORLEVEL%
+    
+    REM MAIN output
+    REM an empty line here so the next line will be the last
+    echo(
+    echo changed={{ if_not_exist }} comment='Task %task_name% not exists in task scheduler'
+)
+

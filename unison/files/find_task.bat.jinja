@@ -1,0 +1,31 @@
+@echo off
+
+REM set variable to first argument
+set task_name=%1
+
+rem set command output to variable
+for /f %%i in ('"schtasks /query /nh | findstr /I "%task_name%" | findstr /V "Folder" "') do (
+  set TaskString=%%i
+    goto :done
+  )
+  
+:done
+echo %TaskString% | findstr /i /c:"%task_name%" >nul
+
+IF %ERRORLEVEL% EQU 0 (
+    REM DEBUG
+    REM echo errorlevel - %ERRORLEVEL%
+    
+    set CommandOutput=True
+    goto :finish
+) ELSE (
+    REM DEBUG
+    REM echo errorlevel - %ERRORLEVEL%
+    
+    set CommandOutput=False
+    goto :finish
+)
+
+:finish
+rem echo without empty line
+<nul set /p=%CommandOutput%

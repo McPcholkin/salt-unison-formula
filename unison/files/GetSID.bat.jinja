@@ -1,0 +1,14 @@
+@echo off
+rem set first argument as variable
+set user=%1
+
+rem set command output to variable
+for /f %%i in ('"wmic useraccount where name="%user%" get sid | findstr /I "S-1" "') do (
+  set UserSID=%%i
+   goto :done
+  )
+  
+:done
+rem echo without empty line
+<nul set /p=%UserSID%
+

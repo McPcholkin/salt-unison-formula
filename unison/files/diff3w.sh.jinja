@@ -1,0 +1,91 @@
+#!/bin/bash
+
+# diff3 wrapper for unison
+
+DEBUG=False
+
+if [ $# == 3 ]
+  then
+    CUR1=$1
+    CURARCH=$2
+    CUR2=$3
+elif [ $# == 2 ]
+  then
+    CUR1=$1
+    CURARCH=$1
+    CUR2=$2
+  else
+    if [ $DEBUG == True ]
+      then
+        echo "Need 2 or 3 args, now $# args"    
+        echo "Abort!"
+        echo ""
+    fi
+    exit 1
+fi
+
+    
+
+diff3_bin=$(whereis diff3 | cut -f 2 -d ' ')
+
+# check exit code
+# 0 - successful
+# 1 - conflicts
+# 2 - trouble
+
+$diff3_bin -m $CUR1 $CURARCH $CUR2 &> /dev/null
+
+DIFF_EXIT_CODE=$?
+
+if [ $DEBUG == True ]
+  then
+    echo "Exit code - $DIFF_EXIT_CODE"
+    echo ''
+fi
+
+case $DIFF_EXIT_CODE in
+  0)
+    if [ $DEBUG == True ]
+      then
+        echo "No conflict, merge successful"
+        echo ''
+    fi
+    
+    $diff3_bin -m $CUR1 $CURARCH $CUR2
+    
+    exit 0
+    ;;
+
+  1)
+    if [ $DEBUG == True ]
+      then
+        echo "Merge conflict, check output"
+        echo ''
+    fi
+
+    $diff3_bin -m $CUR1 $CURARCH $CUR2
+
+    exit 0
+    ;;
+
+  2)
+    if [ $DEBUG == True ]
+      then
+        echo "Merge trouble"
+        echo ''
+    fi
+    
+    exit 1
+    ;;
+
+  *)
+    if [ $DEBUG == True ]
+      then
+        echo "Unknown exit code."
+        echo ''
+    fi
+
+    exit 1
+    ;;
+
+esac

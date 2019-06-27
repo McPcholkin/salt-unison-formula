@@ -1,0 +1,91 @@
+unison:
+  pkgs:
+    - unison
+    - coreutils
+    - grep
+    - diffutils
+    - logrotate
+    - msmtp
+    - cron
+
+  
+  log:
+    location: '/var/log/unison'
+    logrotate_location: '/etc/logrotate.d'
+    logrotate_config:
+      - 'missingok'
+      - 'daily'
+      - 'rotate 7'
+      - 'notifempty'
+      - 'delaycompress'
+      - 'compress'
+
+  
+  user:
+    name: debian-unison
+    group: debian-unison
+    shell: '/bin/bash'
+    groups_optional:
+    # ssh-keygen -t rsa -f unison_rsa
+    key_priv: |
+      -----BEGIN RSA PRIVATE KEY-----
+      MIIEpQIBAAKCAQEAxlb0r52m0/ZSt8kY1BrQE6gzsgS0l5PNJzVKFGNX2EOnxScg
+      -----END RSA PRIVATE KEY-----
+    key_pub: |
+      ssh-rsa AAAAB3NzaAQABAAABAQDGVvSvnabT9lK3yRjILZL debian-unison@server
+    key_mode: '600'
+
+  config:
+    location: '/etc/unison'
+    email_to: 'admin@example.com'
+    email_app: 'msmtp'
+    runer_debug: False
+    root_local: '/tmp/dir1'
+    root_remote: '/tmp/dir2'
+    hostname: HOSTNAME
+    port: 22
+    sshargs: '-oStrictHostKeyChecking=no'
+    batch: true
+    silent: true
+    terse: true
+    perms: '0'        # do not sync perms
+    dontchmod: true # do not sync perms
+    logfile: '~/.unison/log/default.log'
+    debug: False    # 'all' -> everything, 'verbose' -> more
+    storage: '/srv/unison'
+
+  cron:
+    minute: '0'
+    hour: '*/3'
+    daymonth: '*'
+    month: '*'
+    dayweek: '*'
+  
+  msmtp:
+    server: 'smtp.gmail.com'
+    port: 587
+    protocol: 'smtp' 
+    user: 'sender@gmail.com'
+    password: 'Pa$$W0RD'
+
+  backup:
+    backuplocation: 'local'
+    backupcurr: 'Name *'
+    maxbackups: 3
+    backupprefix: '.backup/bak.$VERSION.'
+    #backupsufnclude_backupfix: ''
+  
+  ignore:
+    - '*.tmp'
+    - '*.swp'
+
+  merge:
+    py: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    txt: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    md: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    markdown: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    sh: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    bat: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+    ino: '~/diff3w.sh CURRENT1 CURRENTARCHOPT CURRENT2 > NEW'
+
+
