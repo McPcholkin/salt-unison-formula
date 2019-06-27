@@ -1,6 +1,6 @@
 ======================
 salt-unison-formula
-=====================
+======================
 
 WARNING!!! state under testing now!!!
 WARNING!!! Windows need cygwin to run unison!!!
