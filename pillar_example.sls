@@ -17,6 +17,7 @@ unison:
         port: 9999
 
   user:
+    # ssh-keygen -t rsa -f unison_rsa
     key_priv: |
       -----BEGIN RSA PRIVATE KEY-----
       *******************************
@@ -73,7 +74,7 @@ unison:
       ignore:
         - '*.some_odd_file_test2'
         - '*.md'
-        - '*.py
+        - '*.py'
         - '*.some_odd_file'
 
     test1_Sync2:

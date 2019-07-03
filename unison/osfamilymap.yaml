@@ -10,9 +10,8 @@ Debian:
   
 Windows:
   config:
-    location: 'c:\cygwin64\home'
+    location: 'c:\\cygwin64'
     storage: '/cygdrive/c/UNISON_STORAGE'
-    win_command: 'c:\\cygwin64\\bin\\bash.exe'
   user:
     name: 'SYSTEM'
     name_win: debian-unison

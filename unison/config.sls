@@ -4,7 +4,7 @@ include:
   - unison.install
   - unison.user
 
-
+# --------------------- default parameters ---------------------
 unison_deploy_default_ignore:
   file.managed:
     - name: {{ map.config.location }}/.unison/_ignore.prf
@@ -50,6 +50,9 @@ unison_deploy_default_backup:
       - file: unison_deploy_key_dir
       - user: unison_add_user
 
+# --------------------- end default parameters ---------------------
+
+# --------------------- log ---------------------
 unison_deploy_log_dir:
   file.directory:
     - name: {{ map.log.location }}
@@ -80,7 +83,12 @@ unison_deploy_log_rotation_conf:
         - file: unison_deploy_log_rotation_conf
       - watch:
         - file: unison_deploy_log_rotation_conf
+      - onchanges:
+        - file: unison_deploy_log_rotation_conf
+
+# --------------------- end log ---------------------
  
+# --------------------- runner script ---------------------
 unison_deploy_runner_script:
     file.managed:
       - name: {{ map.config.location }}/unison_run.sh
@@ -97,6 +105,9 @@ unison_deploy_runner_script:
       - reguire:
         - pkg: install_unison
 
+# --------------------- end runner script ---------------------
+
+# --------------------- mail config ---------------------
 unison_deploy_msmtp_conf:
   file.managed:
     - name: {{ map.config.location }}/.msmtprc
@@ -116,6 +127,9 @@ unison_deploy_msmtp_conf:
       - user: unison_add_user
       - pkg: install_unison 
 
+# --------------------- end mail config ---------------------
+
+# --------------------- diff wrapper  ---------------------
 unison_deploy_diff3_wrapper:
     file.managed:
       - name: {{ map.config.location }}/diff3w.sh
@@ -127,22 +141,36 @@ unison_deploy_diff3_wrapper:
       - reguire:
         - pkg: install_unison
 
+# --------------------- end diff wrapper  ---------------------
 
+# --------------------- profiles  ---------------------
+
+# if profiles present start
 {% if map.profiles is mapping %}
+
+# for profiles start
 {% for profile in map.profiles %}
+
+# if profile need delete start
 {% if salt['pillar.get']('unison:profiles:'~profile~':delete', False) %}
 
+# --------------------- delete profiles  ---------------------
+ 
 unison_delete_profile-{{ profile }}:
   file.absent:
     - name: {{ map.config.location }}/.unison/{{ profile }}.prf
-
 
 unison_delete_task_for_profile-{{ profile }}:
   cron.absent:
     - name: {{ map.config.location }}/unison_run.sh  {{ profile }}
     - user: {{ map.user.name }}
-    
+
+# --------------------- end delete profiles  ---------------------
+
+# if profile not need delete, create profile
 {% else %}
+
+# --------------------- create profile ---------------------
 
 unison_create_profile-{{ profile }}_directory:
   file.directory:
@@ -167,7 +195,8 @@ unison_create_profile-{{ profile }}_directory:
       - file: unison_deploy_key_dir
       - user: unison_add_user
 
-# ----- define values ------
+# --------------------- define variables for profile file ---------------------
+
 {% set root_local = salt['pillar.get']('unison:profiles:'~profile~':config:root_local', map.config.root_local ) %}
 {% set remote_port = salt['pillar.get']('unison:profiles:'~profile~':config:port', map.config.port) %}
 {% set remote_host = salt['pillar.get']('unison:profiles:'~profile~':config:hostname', map.config.hostname) %}
@@ -195,8 +224,7 @@ unison_create_profile-{{ profile }}_directory:
 
 {% set custom_ignore = salt['pillar.get']('unison:profiles:'~profile~':ignore', False) %}
 
-
-# --------------------------
+# --------------------- end define variables for profile file ---------------------
 
 unison_deploy_profile-{{ profile }}:
     file.managed:
@@ -226,32 +254,44 @@ unison_deploy_profile-{{ profile }}:
       - require_in:
         - cron: unison_create_task_for_profile-{{ profile }}
 
-# --- cron var ---
+# --------------------- end create profile ---------------------
+
+
+# --------------------- create profile cron job ---------------------
+
+# --------------------- define variables for profile cron job ---------------------
+
 {% set cron_minute = salt['pillar.get']('unison:profiles:'~profile~':cron:minute', range(1, 59) | random) %}
 {% set cron_hour = salt['pillar.get']('unison:profiles:'~profile~':cron:hour', map.cron.hour) %}
 {% set cron_daymonth = salt['pillar.get']('unison:profiles:'~profile~':cron:daymonth', map.cron.daymonth) %}
 {% set cron_month = salt['pillar.get']('unison:profiles:'~profile~':cron:month', map.cron.month) %}
 {% set cron_dayweek = salt['pillar.get']('unison:profiles:'~profile~':cron:dayweek', map.cron.dayweek) %}
 
-# -------------------
+# --------------------- end define variables for profile cron job ---------------------
+
 unison_create_task_for_profile-{{ profile }}:
   cron.present:
-    - name: {{ map.config.location }}/unison_run.sh  {{ profile }}
+    - name: {{ map.config.location }}/unison_run.sh {{ profile }}
     - user: {{ map.user.name }}
-#    - minute: '{{ range(1, 59) | random }}'
     - minute: '{{ cron_minute }}'
     - hour: '{{ cron_hour }}'
     - daymonth: '{{ cron_daymonth }}'
     - month: '{{ cron_month }}'
     - dayweek: '{{ cron_dayweek }}'
 
+# --------------------- end create profile cron job ---------------------
 
+
+# end create profile 
 {% endif %}
 
+# for profiles end
 {% endfor %}
 
+# if profiles not present, it probably server
 {% else %}
 
+# create server storage dir
 unison_deploy_server_directory:
   file.directory:
     - name: {{ map.config.storage }}
@@ -262,5 +302,6 @@ unison_deploy_server_directory:
     - reguire:
       - user: unison_add_user
 
+# if profiles present end
 {% endif %}
 
