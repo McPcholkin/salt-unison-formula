@@ -5,6 +5,7 @@ salt-unison-formula
 This state install and configure unison as automatic sync service on linux and windows hosts.   
 
 WARNING!!! state under testing now!!!      
+
 WARNING!!! Windows need cygwin to run unison!!!   
 
 To use this state for windows hosts on host must be installed **cygwin** and packets: *msmtp, unison*   
